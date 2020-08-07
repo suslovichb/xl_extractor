@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-import time
+from openpyxl import load_workbook, Workbook
+from tkinter import Tk, Text, StringVar, BooleanVar, _setit, messagebox, filedialog
 
 class ExtractorApp(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
@@ -10,6 +11,9 @@ class ExtractorApp(tk.Frame):
         self.parent.title('XL Extractor')
         self.parent.geometry('510x582')
         self.parent.resizable(0, 0)
+
+        self.source_workbook = None
+        self.extraction_workbook = None
 
         menu_button_sytyle = ttk.Style()
         menu_button_sytyle.configure("TMenubutton", foreground="#ffffff00", background="gray83")
@@ -66,17 +70,71 @@ class ExtractorApp(tk.Frame):
         self.progress.grid(row=12, column=0, columnspan=5, padx=5)
         self.pack(side="top", fill="both", expand=True)
 
-    def choose_source_file(self):
-        pass
+    def get_workbook(self, file_path, error_message='Workbook loading failed'):
+        try:
+            return load_workbook(file_path)
+        except Exception:
+            messagebox.showerror(title="Error", message=error_message)
 
-    def source_worksheet_changed(self):
-        pass
+    def choose_source_file(self):
+        source_file = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx"),("All files","*.*")))
+        if source_file:
+            self.source_workbook_field.delete(1.0, 'end')
+            self.source_workbook_field.insert(1.0, source_file)
+            self.set_status('Source workbook loading...')
+            self.source_workbook = self.get_workbook(source_file)
+            self.set_status('')
+            self.refresh_source_worksheets()
+
+    def refresh_source_worksheets(self):
+        self.source_worksheet_choice.set("")
+        self.source_worksheet_optionmenu['menu'].delete(0, 'end')
+        new_choices = self.source_workbook.sheetnames
+        for choice in new_choices:
+            self.source_worksheet_optionmenu['menu'].add_command(label=choice, command=_setit(self.source_worksheet_choice, choice))
+
+    def source_worksheet_changed(self, *args):
+        self.source_worksheet_field.delete(1.0, 'end')
+        self.source_worksheet_field.insert(1.0, self.source_worksheet_choice.get())
 
     def choose_extraction_file(self):
-        pass
+        extraction_file = filedialog.askopenfilename(filetypes=(("Excel files", "*.xlsx"),("All files","*.*")))
+        if extraction_file:
+            self.extraction_workbook_field.delete(1.0, 'end')
+            self.extraction_workbook_field.insert(1.0, extraction_file)
+            self.set_status('Extraction workbook loading...')
+            self.extraction_workbook = self.get_workbook(extraction_file)
+            self.set_status('')
+            self.refresh_extraction_worksheets()
+            self.clear_extraction_columns_listbox()
 
-    def extraction_worksheet_changed(self):
-        pass
+    def refresh_extraction_worksheets(self):
+        self.extraction_worksheet_choice.set("")
+        self.extraction_worksheet_optionmenu['menu'].delete(0, 'end')
+        new_choices = self.extraction_workbook.sheetnames
+        for choice in new_choices:
+            self.extraction_worksheet_optionmenu['menu'].add_command(label=choice, command=_setit(self.extraction_worksheet_choice, choice))
+
+    def extraction_worksheet_changed(self, *args):
+        self.extraction_worksheet_field.delete(1.0, 'end')
+        self.extraction_worksheet_field.insert(1.0, self.extraction_worksheet_choice.get())
+        self.refresh_extraction_columns()
+
+    def refresh_extraction_columns(self):
+        self.clear_extraction_columns_listbox()
+        if self.extraction_worksheet_choice.get():
+            try:
+                for header_cell in self.extraction_workbook[self.extraction_worksheet_choice.get()][1]:
+                    self.extraction_columns_listbox.insert('end', header_cell.value)
+            except:
+                messagebox.showerror(title="Error", message='Columns loading failed')
+
+    def clear_extraction_columns_listbox(self):
+        self.extraction_columns_listbox.delete(0, 'end')
+
+    def set_status(self, text):
+        self.status_text.set(str(text))
+        self.status_label.update()
 
     def extract(self):
         pass
