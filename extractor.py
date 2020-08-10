@@ -15,8 +15,9 @@ class ExtractorApp(tk.Frame):
         self.source_workbook = None
         self.extraction_workbook = None
 
-        menu_button_sytyle = ttk.Style()
-        menu_button_sytyle.configure("TMenubutton", foreground="#ffffff00", background="gray83", font=('Arial', 6))
+        menu_button_style = ttk.Style()
+        menu_button_style.configure("TMenubutton", foreground="#ffffff00", background="gray83", font=('Arial', 6))
+        menu_button_style.map("TMenubutton", foreground=[("disabled","#FFFFFF00")])
         secondary_button_style = ttk.Style()
         secondary_button_style.configure('secondary.TButton', font=('Calibri', 8))
 
@@ -212,7 +213,7 @@ class ExtractorApp(tk.Frame):
             return
 
         self.set_progress(1)
-        self.set_status('Source sheet reading...')
+        self.set_status('Extraction sheet reading...')
 
         extraction_worksheet_name = self.extraction_worksheet_field.get(1.0, 'end').replace('\n','')
         try:
@@ -244,7 +245,7 @@ class ExtractorApp(tk.Frame):
             check_list.append({col_name: row[col_index-1].value for col_name, col_index in extraction_cols_indices_by_names.items()})
 
         self.set_progress(4)
-        self.set_status('Searching for columns to extract...')
+        self.set_status('Searching for rows to extract...')
 
         for row in source_worksheet.iter_rows(min_row=2):
             dict_to_check = {col_name: row[col_index-1].value for col_name, col_index in source_cols_indices_by_names.items()}
