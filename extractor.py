@@ -225,7 +225,11 @@ class ExtractorApp(tk.Frame):
         self.set_progress(2)
         self.set_status('Selected columns reading...')
 
-        extraction_cols_names = [self.extraction_columns_listbox.get(index) for index in self.extraction_columns_listbox.curselection()]
+        selection_indices = self.extraction_columns_listbox.curselection()
+        if not selection_indices:
+            messagebox.showerror(title="Error", message="No columns selected")
+            return
+        extraction_cols_names = [self.extraction_columns_listbox.get(index) for index in selection_indices]
         for col_name in extraction_cols_names:
             extraction_col_index = self.find_col_index(extraction_worksheet, col_name)
             if not extraction_col_index:
